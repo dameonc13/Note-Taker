@@ -5,6 +5,7 @@
 
 var express = require("express");
 var path = require("path");
+var fs = require("fs");
 // ==============================================================================
 // EXPRESS CONFIGURATION
 // This sets up the basic properties for our express server
@@ -21,23 +22,57 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/public')));
 
+
+
+//Reading from json file 
+var db = fs.readFileSync("./db/db.json")
+var dbs = JSON.parse(db)
+
+
+//Api Routes 
+app.get("/api/notes", (req, res) =>  {
+  return res.json(dbs);
+});
+
+
+
+ app.post("/api/notes", (req ,res) => {
+  var newNote = req.body  
+  newNote.id = 1 
+  dbs.push( newNote)
+  fs.writeFileSync("./db/db.json" ,JSON.stringify(dbs), ("utf-8") )
+  res.json(true)
+
+}) 
+
+
+app.delete("/api/notes/:id", (req ,res) =>{
+    var remove = dbs.filter(parseFloat(req.params.id))
+     
+    for (var i = 0; i < dbs.length; i++) {
+    
+      if (remove ===  db[i].routeName) {
+         res.json(true)
+      }
+    }
+  })
+
+    
 // ================================================================================
-// ROUTER
+// Html Routes
 // The below points our server to a series of "route" files.
 // These routes give our server a "map" of how to respond when users visit or request data from various URLs.
 // ================================================================================
-app.get("/", function(req, res) {
+app.get("/", (req, res)=> {
     res.sendFile(path.join(__dirname, "index.html"));
   });
   
-app.get("/notes", function(req, res) {
+app.get("/notes", (req, res)=> {
     res.sendFile(path.join(__dirname, "notes.html"));
   });
   
-  // Displays all characters
-app.get("/api/notes", function(req, res) {
-    return res.json(characters);
-  });
+  
+
 
 
 // =============================================================================
