@@ -28,21 +28,21 @@ var saveNote = function(note) {
 var deleteNote = function(id) {
   return $.ajax({
     url: "api/notes/" + id,
-    method: "GET"
+    method: "DELETE"
   });
 };
 
 // If there is an activeNote, display it, otherwise render empty inputs
 var renderActiveNote = function() {
   $saveNoteBtn.hide();
-    console.log(activeNote);
+  
     
   if (activeNote.id) {
     $noteTitle.attr("readonly", true);
     $noteText.attr("readonly", true);
     $noteTitle.val(activeNote.title);
     $noteText.val(activeNote.text);
-    console.log($noteTitle.val());
+    
     
   } else {
     $noteTitle.attr("readonly", false);

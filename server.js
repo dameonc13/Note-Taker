@@ -3,9 +3,10 @@
 // Series of npm packages that we will use to give our server useful functionality
 // ==============================================================================
 
-var express = require("express");
-var path = require("path");
-var fs = require("fs");
+const express = require("express");
+const path = require("path");
+const fs = require("fs");
+const uuid = require("uuid/v4")
 // ==============================================================================
 // EXPRESS CONFIGURATION
 // This sets up the basic properties for our express server
@@ -30,48 +31,40 @@ var dbs = JSON.parse(db)
 
 
 //Api Routes 
-app.get("/api/notes", (req, res) =>  {
-  return res.json(dbs);
+app.get("/api/notes", (req, res) => {
+  return res.json(JSON.parse(fs.readFileSync('./db/db.json', 'utf-8')));
 });
 
 
 
- app.post("/api/notes", (req ,res) => {
-  var newNote = req.body  
-  newNote.id = 1 
-  dbs.push( newNote)
-  fs.writeFileSync("./db/db.json" ,JSON.stringify(dbs), ("utf-8") )
-  res.json(true)
+app.post("/api/notes", (req, res) => {
+  var newNote = ({ id: uuid(), title: req.body.title, text: req.body.text })
+  dbs.push(newNote)
+  fs.writeFileSync("./db/db.json", JSON.stringify(dbs), ("utf-8"))
+  return res.json(true)
 
-}) 
+})
 
 
-app.delete("/api/notes/:id", (req ,res) =>{
-    var remove = dbs.filter(parseFloat(req.params.id))
-     
-    for (var i = 0; i < dbs.length; i++) {
-    
-      if (remove ===  db[i].routeName) {
-         res.json(true)
-      }
-    }
-  })
+app.delete('/api/notes/:id', (req, res) => {
+  
+  const newNotes = dbs.filter(note => note.id !== req.params.id);
+  fs.writeFileSync('./db/db.json', JSON.stringify(newNotes) , ("utf-8"));
+  res.json(true);
+});
 
-    
 // ================================================================================
 // Html Routes
-// The below points our server to a series of "route" files.
-// These routes give our server a "map" of how to respond when users visit or request data from various URLs.
 // ================================================================================
-app.get("/", (req, res)=> {
-    res.sendFile(path.join(__dirname, "index.html"));
-  });
-  
-app.get("/notes", (req, res)=> {
-    res.sendFile(path.join(__dirname, "notes.html"));
-  });
-  
-  
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
+app.get("/notes", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/notes.html"));
+});
+
+
 
 
 
@@ -80,6 +73,6 @@ app.get("/notes", (req, res)=> {
 // The below code effectively "starts" our server
 // =============================================================================
 
-app.listen(PORT, function() {
+app.listen(PORT, function () {
   console.log("App listening on PORT: " + PORT);
 });
